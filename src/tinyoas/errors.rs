@@ -1,5 +1,3 @@
-pub type CliResult = Result<(), CliError>;
-
 pub struct CliError {
     /// The error to display
     pub error: Option<anyhow::Error>,

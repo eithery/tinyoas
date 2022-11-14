@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use clap::Command;
+use clap::{App, Command};
 use tinyoas::CliResult;
 use tinyoas::commands::{build, inspect};
 
@@ -25,7 +25,7 @@ pub fn main() -> CliResult {
 }
 
 
-fn cli() -> Command<'static> {
+fn cli() -> App<'static> {
     Command::new("tinyoas")
         .about("CLI toolbox for tinyOAS REST API specification documents")
         .subcommand_required(true)

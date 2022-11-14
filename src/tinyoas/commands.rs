@@ -1,13 +1,14 @@
 use std::path::PathBuf;
-use crate::errors::CliError;
+use std::fs;
+use owo_colors::OwoColorize;
+use crate::errors::*;
 
-pub type CliResult = Result<(), CliError>;
 
+pub fn build(_source: &PathBuf, target: &PathBuf) -> CliResult {
+    fs::create_dir_all(target)
+        .or_error(format!("Unable to create a target directory '{}'", target.display().yellow()))?;
 
-pub fn build(source: &PathBuf, target: &PathBuf) -> CliResult {
-    println!("Building OAS3 document...");
-    println!("Source: {:?}", source);
-    println!("Target: {:?}", target);
+    println!("Done");
     Ok(())
 }
 

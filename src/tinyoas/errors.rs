@@ -1,42 +1,46 @@
-pub struct CliError {
-    /// The error to display
-    pub error: Option<anyhow::Error>,
+use std::fmt;
+use std::io;
+use owo_colors::OwoColorize;
 
-    /// The process exit code
-    pub exit_code: i32
+pub type CliResult = Result<(), CliError>;
+
+
+pub struct CliError {
+    message: String,
+    source: io::Error
 }
 
 impl CliError {
-    pub fn new(error: anyhow::Error, code: i32) -> CliError {
+    fn new(message: String, source: io::Error) -> CliError {
         CliError {
-            error: Some(error),
-            exit_code: code
-        }
-    }
-
-    pub fn code(code: i32) -> CliError {
-        CliError {
-            error: None,
-            exit_code: code
+            message,
+            source
         }
     }
 }
 
-impl From<anyhow::Error> for CliError {
-    fn from(err: anyhow::Error) -> CliError {
-        CliError::new(err, 101)
+impl fmt::Display for CliError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{} {}\n\nCaused by:\n    {}", "error:".red(), self.message, self.source)
     }
 }
 
-impl From<clap::Error> for CliError {
-    fn from(err: clap::Error) -> CliError {
-        let code = if err.use_stderr() { 1 } else { 0 };
-        CliError::new(err.into(), code)
+
+pub trait CliErrorHandler {
+    fn or_error(self, message: String) -> CliResult;
+}
+
+
+impl<T> CliErrorHandler for std::io::Result<T> {
+    fn or_error(self, message: String) -> CliResult {
+        if let Err(err) = self {
+            return fail(message, err);
+        }
+        Ok(())
     }
 }
 
-impl From<std::io::Error> for CliError {
-    fn from(err: std::io::Error) -> CliError {
-        CliError::new(err.into(), 1)
-    }
+
+fn fail(message: String, source: io::Error) -> CliResult {
+    Err(CliError::new(message, source))
 }

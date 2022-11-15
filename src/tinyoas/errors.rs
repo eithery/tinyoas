@@ -1,46 +1,28 @@
-use std::fmt;
 use std::io;
+use std::fmt;
+use std::path::PathBuf;
 use owo_colors::OwoColorize;
+use crate::cli;
 
-pub type CliResult = Result<(), CliError>;
 
+pub trait CliError {
+    fn invalid_source_path<T>(&self, err: io::Error) -> cli::Result<T>;
 
-pub struct CliError {
-    message: String,
-    source: io::Error
+    fn invalid_target_directory<T>(&self, err: io::Error) -> cli::Result<T>;
 }
 
-impl CliError {
-    fn new(message: String, source: io::Error) -> CliError {
-        CliError {
-            message,
-            source
-        }
+
+impl CliError for &PathBuf {
+    fn invalid_source_path<T>(&self, err: io::Error) -> cli::Result<T> {
+        cli::fail(format!("Invalid tynyOAS documents source path '{}'", self.display().yellow()), err)
     }
-}
 
-impl fmt::Display for CliError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "{} {}\n\nCaused by:\n    {}", "error:".red(), self.message, self.source)
+    fn invalid_target_directory<T>(&self, err: io::Error) -> cli::Result<T> {
+        cli::fail(format!("Unable to create a target directory '{}'", self.display().yellow()), err)
     }
 }
 
 
-pub trait CliErrorHandler {
-    fn or_error(self, message: String) -> CliResult;
-}
-
-
-impl<T> CliErrorHandler for std::io::Result<T> {
-    fn or_error(self, message: String) -> CliResult {
-        if let Err(err) = self {
-            return fail(message, err);
-        }
-        Ok(())
-    }
-}
-
-
-fn fail(message: String, source: io::Error) -> CliResult {
-    Err(CliError::new(message, source))
+pub fn format_error(f: &mut fmt::Formatter<'_>, message: &str, source: &io::Error) -> fmt::Result {
+    writeln!(f, "{} {}\n\nCaused by:\n    {}", "error:".red(), message, source)
 }

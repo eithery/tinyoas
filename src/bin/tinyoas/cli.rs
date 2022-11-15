@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use clap::{App, Command};
-use tinyoas::CliResult;
+use tinyoas::cli::CliResult;
 use tinyoas::commands::{build, inspect};
 
 const BUILD: &str = "build";
@@ -14,11 +14,11 @@ pub fn main() -> CliResult {
         Some((BUILD, options)) => {
             let source = options.path_arg("source");
             let target = options.path_arg("target");
-            build(source, target)
+            build::<()>(source, target)
         }
         Some((INSPECT, options)) => {
             let source = options.path_arg("source");
-            inspect(source)
+            inspect::<()>(source)
         }
         _ => unreachable!()
     }

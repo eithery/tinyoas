@@ -1,24 +1,25 @@
-use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 use crate::cli::CliResult;
-use crate::errors::*;
+use crate::oas_path::source::OasSourcePath;
+use crate::oas_path::target::OasTargetPath;
 
+pub fn build<T>(source: &Path, dest: &Path) -> CliResult {
+    let source_files = source.oas_files()?;
+    let result_file = dest.result_file_path()?;
 
-pub fn build<T>(source: &PathBuf, target: &PathBuf) -> CliResult {
-    let _source_path = &source.canonicalize()
-        .or_else(|err| source.invalid_source_path(err))?;
+    for file in source_files {
+        println!("Process file: {}", file.display())
+    }
 
-    fs::create_dir_all(target)
-        .or_else(|err| target.invalid_target_directory(err))?;
+    // fs::create_dir_all(target.clean())
+    //     .or_else(|err| target.invalid_target_directory(err))?;
 
-//    let target_path = &target.canonicalize().unwrap();
-
-    println!("Done");
+    println!("Done. Result file: {}", result_file.display());
     Ok(())
 }
 
 
-pub fn inspect<T>(source: &PathBuf) -> CliResult {
+pub fn inspect<T>(source: &Path) -> CliResult {
     println!("Inspect tinyOAS sources...");
     println!("Source: {:?}", source);
     Ok(())
